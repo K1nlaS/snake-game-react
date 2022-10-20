@@ -4,17 +4,25 @@ import { useInterval } from '../../utils/useInterval';
 import { snakeConstatns } from '../../utils/snake-game-constants';
 
 // Styled Components
-import { SNAKE_CONTAINER } from './snake-game.styles';
+import {
+  SNAKE_CONTAINER,
+  BUTTON_CONTAINER,
+  GAME_OVER,
+  PLAY_AGAIN
+} from './snake-game.styles';
 
 const SnakeGame = () => {
 
   const canvasRef = useRef(null);
+  const snake_game = useRef(null);
 
   const [snake, setSnake] = useState(snakeConstatns.SNAKE_START);
   const [food, setFood] = useState(snakeConstatns.FOOD_START);
   const [dir, setDir] = useState([0, -1]);
   const [speed, setSpeed] = useState(null);
-  const [gameOver, setGameOver] = useState(false);
+  const [gameOver, setGameOver] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [startAgain, setStartAgain] = useState(false);
 
   const startGame = () => {
     setSnake(snakeConstatns.SNAKE_START);
@@ -22,11 +30,15 @@ const SnakeGame = () => {
     setDir([0, -1]);
     setSpeed(snakeConstatns.SPEED);
     setGameOver(false);
+    setIsPlaying(true);
+    snake_game.current.focus();
   };
 
   const endGame = () => {
     setSpeed(null);
     setGameOver(true);
+    setIsPlaying(false);
+    setStartAgain(true);
   };
 
   const moveSnake = (e) => {
@@ -109,26 +121,41 @@ const SnakeGame = () => {
 
     ctx.setTransform(snakeConstatns.SCALE, 0, 0, snakeConstatns.SCALE, 0, 0);
     ctx.clearRect(0, 0, snakeConstatns.CANVAS_SIZE[0], snakeConstatns.CANVAS_SIZE[1]);
-    ctx.fillStyle = "pink";
+    ctx.fillStyle = "rgb(67, 217, 173)";
+    ctx.shadowBlur = 0;
 
     snake.map(([x, y]) => ctx.fillRect(x, y, 1, 1));
 
-    ctx.fillStyle = "cyan";
+    ctx.fillStyle = "rgb(67, 217, 173)";
+    ctx.shadowColor = "rgb(67, 217, 173)";
+    ctx.shadowBlur = 10;
+
     ctx.fillRect(food[0], food[1], 1, 1);
 
   }, [snake, food, gameOver]);
 
+
   return (
-    <SNAKE_CONTAINER role="button" tabIndex="0" onKeyDown={moveSnake}>
+    <SNAKE_CONTAINER ref={snake_game} role="button" tabIndex="0" onKeyDown={moveSnake}>
       <canvas
         ref={canvasRef}
         width={`${snakeConstatns.CANVAS_SIZE[0]}px`}
         height={`${snakeConstatns.CANVAS_SIZE[1]}px`}
       />
 
-      {gameOver && <div>GAME OVER</div>}
+      {gameOver && <GAME_OVER>GAME OVER!</GAME_OVER>}
 
-      <button onClick={startGame}>Start Game</button>
+      {!isPlaying && !startAgain && (
+        <BUTTON_CONTAINER onKeyDown={moveSnake}>
+          <button onClick={startGame}>start-game</button>
+        </BUTTON_CONTAINER>
+      )}
+
+      {!isPlaying && gameOver && startAgain && (
+        <PLAY_AGAIN>
+          <button onClick={startGame}>start-again</button>
+        </PLAY_AGAIN>
+      )}
     </SNAKE_CONTAINER>
   );
 };
